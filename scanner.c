@@ -1,3 +1,4 @@
+// ...existing code...
 /* Scanner
  * @copyright (c) 2008, Hedspi, Hanoi University of Technology
  * @author Huu-Duc Nguyen
@@ -21,10 +22,13 @@ extern int currentChar;
 
 extern CharCode charCodes[];
 
+/* Macro to safely index charCodes using unsigned char */
+#define CHCODE(c) (charCodes[(unsigned char)(c)])
+
 /***************************************************************/
 
 void skipBlank() {
-  while (charCodes[currentChar] == CHAR_SPACE)
+  while (currentChar != EOF && CHCODE(currentChar) == CHAR_SPACE)
     readChar();
 }
 
@@ -32,10 +36,10 @@ void skipComment() {
   // Called when we've already consumed the "(*" sequence.
   // We assume currentChar is the first character after "(*".
   while (currentChar != EOF) {
-    if (charCodes[currentChar] == CHAR_TIMES) {
+    if (CHCODE(currentChar) == CHAR_TIMES) {
       readChar();
       if (currentChar == EOF) break;
-      if (charCodes[currentChar] == CHAR_RPAR) {
+      if (CHCODE(currentChar) == CHAR_RPAR) {
         // consume ')'
         readChar();
         return;
@@ -55,7 +59,7 @@ Token* readIdentKeyword(void) {
   char tmp[MAX_IDENT_LEN + 1];
 
   // read first char (currentChar is a letter at entry)
-  while (charCodes[currentChar] == CHAR_LETTER || charCodes[currentChar] == CHAR_DIGIT) {
+  while (currentChar != EOF && (CHCODE(currentChar) == CHAR_LETTER || CHCODE(currentChar) == CHAR_DIGIT)) {
     if (count < MAX_IDENT_LEN) {
       token->string[count] = (char) currentChar;
       tmp[count] = (char) toupper(currentChar); // for keyword checking (case-insensitive)
@@ -90,7 +94,7 @@ Token* readNumber(void) {
   Token *token = makeToken(TK_NUMBER, lineNo, colNo);
   int value = 0;
 
-  while (charCodes[currentChar] == CHAR_DIGIT) {
+  while (currentChar != EOF && CHCODE(currentChar) == CHAR_DIGIT) {
     value = value * 10 + (currentChar - '0');
     readChar();
   }
@@ -119,7 +123,7 @@ Token* readConstChar(void) {
     return token;
   }
 
-  if (charCodes[currentChar] == CHAR_SINGLEQUOTE) {
+  if (CHCODE(currentChar) == CHAR_SINGLEQUOTE) {
     readChar();
     return token;
   } else {
@@ -137,7 +141,7 @@ Token* getToken(void) {
   if (currentChar == EOF) 
     return makeToken(TK_EOF, lineNo, colNo);
 
-  switch (charCodes[currentChar]) {
+  switch (CHCODE(currentChar)) {
   case CHAR_SPACE: skipBlank(); return getToken();
   case CHAR_LETTER: return readIdentKeyword();
   case CHAR_DIGIT: return readNumber();
@@ -150,33 +154,33 @@ Token* getToken(void) {
     readChar();
     return token;
   case CHAR_TIMES:
-  ln = lineNo; cn = colNo;
-  readChar();
-  if (charCodes[currentChar] == CHAR_TIMES) {
-    token = makeToken(SB_POW, ln, cn);
+    ln = lineNo; cn = colNo;
+    readChar();
+    if (currentChar != EOF && CHCODE(currentChar) == CHAR_TIMES) {
+      token = makeToken(SB_POW, ln, cn);
+      readChar();
+      return token;
+    } else {
+      token = makeToken(SB_TIMES, ln, cn);
+      return token;
+    }
+  case CHAR_SLASH:
+    ln = lineNo; cn = colNo;
+    readChar();
+    if (currentChar == '/') {
+      // skip đến cuối dòng
+      while (currentChar != EOF && currentChar != '\n') {
+        readChar();
+      }
+      return getToken();
+    } else {
+      token = makeToken(SB_SLASH, ln, cn);
+      return token;
+    }
+  case CHAR_PERCENT:
+    token = makeToken(SB_MOD, lineNo, colNo);
     readChar();
     return token;
-  } else {
-    token = makeToken(SB_TIMES, ln, cn);
-    return token;
-  }
-  case CHAR_SLASH:
-  ln = lineNo; cn = colNo;
-  readChar();
-  if (currentChar == '/') {
-    // skip d?n cu?i d�ng
-    while (currentChar != EOF && currentChar != '\n') {
-      readChar();
-    }
-    return getToken();
-  } else {
-    token = makeToken(SB_SLASH, ln, cn);
-    return token;
-  }
-  case CHAR_PERCENT:
-  token = makeToken(SB_MOD, lineNo, colNo);
-  readChar();
-  return token;
   case CHAR_EQ:
     token = makeToken(SB_EQ, lineNo, colNo);
     readChar();
@@ -192,7 +196,7 @@ Token* getToken(void) {
   case CHAR_COLON:
     ln = lineNo; cn = colNo;
     readChar();
-    if (charCodes[currentChar] == CHAR_EQ) {
+    if (currentChar != EOF && CHCODE(currentChar) == CHAR_EQ) {
       token = makeToken(SB_ASSIGN, ln, cn);
       readChar();
       return token;
@@ -210,7 +214,7 @@ Token* getToken(void) {
     // could be '(' or comment "(* ... *)"
     ln = lineNo; cn = colNo;
     readChar(); // move past '('
-    if (charCodes[currentChar] == CHAR_TIMES) {
+    if (currentChar != EOF && CHCODE(currentChar) == CHAR_TIMES) {
       // enter comment: skip everything until "*)"
       readChar(); // move past '*'
       skipComment();
@@ -227,11 +231,11 @@ Token* getToken(void) {
   case CHAR_LT:
     ln = lineNo; cn = colNo;
     readChar();
-    if (charCodes[currentChar] == CHAR_EQ) {
+    if (currentChar != EOF && CHCODE(currentChar) == CHAR_EQ) {
       token = makeToken(SB_LE, ln, cn);
       readChar();
       return token;
-    } else if (charCodes[currentChar] == CHAR_GT) {
+    } else if (currentChar != EOF && CHCODE(currentChar) == CHAR_GT) {
       token = makeToken(SB_NEQ, ln, cn);
       readChar();
       return token;
@@ -242,7 +246,7 @@ Token* getToken(void) {
   case CHAR_GT:
     ln = lineNo; cn = colNo;
     readChar();
-    if (charCodes[currentChar] == CHAR_EQ) {
+    if (currentChar != EOF && CHCODE(currentChar) == CHAR_EQ) {
       token = makeToken(SB_GE, ln, cn);
       readChar();
       return token;
@@ -360,4 +364,3 @@ int main(int argc, char *argv[]) {
     
   return 0;
 }
-
