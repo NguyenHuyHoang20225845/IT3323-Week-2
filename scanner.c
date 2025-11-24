@@ -144,7 +144,7 @@ Token* getToken(void) {
           currentChar,
           (currentChar==EOF? '?' : (char)currentChar),
           (currentChar==EOF? -1 : CHCODE(currentChar)));
-          
+
   if (currentChar == EOF) 
     return makeToken(TK_EOF, lineNo, colNo);
 
@@ -264,11 +264,19 @@ Token* getToken(void) {
       return token;
     }
   case CHAR_EXCLAIMATION:
-    // '!' not used in this Pascal-like language; report invalid symbol
-    token = makeToken(TK_NONE, lineNo, colNo);
-    error(ERR_INVALIDSYMBOL, lineNo, colNo);
+    ln = lineNo; cn = colNo;
+    /* consume '!' and check if next is '=' -> treat as '!=' equivalent to '<>' */
     readChar();
-    return token;
+    if (currentChar != EOF && CHCODE(currentChar) == CHAR_EQ) {
+      token = makeToken(SB_NEQ, ln, cn);
+      readChar();
+      return token;
+    } else {
+      /* standalone '!' is invalid in this Pascal-like language */
+      token = makeToken(TK_NONE, ln, cn);
+      error(ERR_INVALIDSYMBOL, ln, cn);
+      return token;
+    }
   default:
     token = makeToken(TK_NONE, lineNo, colNo);
     error(ERR_INVALIDSYMBOL, lineNo, colNo);
