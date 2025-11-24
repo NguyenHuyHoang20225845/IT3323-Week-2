@@ -1,12 +1,3 @@
-/* 
- * @copyright (c) 2008, Hedspi, Hanoi University of Technology
- * @author Huu-Duc Nguyen
- * @version 1.0
- */
-
-#ifndef __CHARCODE_H__
-#define __CHARCODE_H__
-
 typedef enum {
   CHAR_SPACE,
   CHAR_LETTER,
@@ -15,6 +6,7 @@ typedef enum {
   CHAR_MINUS,
   CHAR_TIMES,
   CHAR_SLASH,
+  CHAR_PERCENT,   // thêm cho %
   CHAR_LT,
   CHAR_GT,
   CHAR_EXCLAIMATION,
@@ -29,4 +21,3 @@ typedef enum {
   CHAR_UNKNOWN
 } CharCode;
 
-#endif

@@ -31,7 +31,11 @@ struct {
   {"WHILE", KW_WHILE},
   {"DO", KW_DO},
   {"FOR", KW_FOR},
-  {"TO", KW_TO}
+  {"TO", KW_TO},
+  {"STRING", KW_STRING},
+  {"BYTES", KW_BYTES},
+  {"REPEAT", KW_REPEAT},
+  {"UNTIL", KW_UNTIL}
 };
 
 int keywordEq(char *kw, char *string) {
@@ -47,7 +51,7 @@ TokenType checkKeyword(char *string) {
   for (i = 0; i < KEYWORDS_COUNT; i++)
     if (keywordEq(keywords[i].string, string)) 
       return keywords[i].tokenType;
-  return TK_NONE;
+  return TK_IDENT;
 }
 
 Token* makeToken(TokenType tokenType, int lineNo, int colNo) {
