@@ -138,6 +138,13 @@ Token* getToken(void) {
   Token *token;
   int ln, cn;
 
+  /* DEBUG: show currentChar and its CHCODE before switch */
+  fprintf(stderr, "DBG getToken at %d-%d: currentChar=%d '%c' CHCODE=%d\n",
+          lineNo, colNo,
+          currentChar,
+          (currentChar==EOF? '?' : (char)currentChar),
+          (currentChar==EOF? -1 : CHCODE(currentChar)));
+          
   if (currentChar == EOF) 
     return makeToken(TK_EOF, lineNo, colNo);
 
