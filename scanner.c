@@ -138,13 +138,6 @@ Token* getToken(void) {
   Token *token;
   int ln, cn;
 
-  /* DEBUG: show currentChar and its CHCODE before switch */
-  fprintf(stderr, "DBG getToken at %d-%d: currentChar=%d '%c' CHCODE=%d\n",
-          lineNo, colNo,
-          currentChar,
-          (currentChar==EOF? '?' : (char)currentChar),
-          (currentChar==EOF? -1 : CHCODE(currentChar)));
-
   if (currentChar == EOF) 
     return makeToken(TK_EOF, lineNo, colNo);
 
@@ -237,9 +230,7 @@ Token* getToken(void) {
     return token;
   case CHAR_LT:
     ln = lineNo; cn = colNo;
-    fprintf(stderr, "DEBUG: before readChar at %d-%d currentChar=%d '%c'\n", ln, cn, currentChar, (currentChar==EOF? '?' : (char)currentChar));
     readChar();
-    fprintf(stderr, "DEBUG: after readChar currentChar=%d '%c' CHCODE=%d\n", currentChar, (currentChar==EOF? '?' : (char)currentChar), (currentChar==EOF? -1 : CHCODE(currentChar)));
     if (currentChar != EOF && CHCODE(currentChar) == CHAR_EQ) {
       token = makeToken(SB_LE, ln, cn);
       readChar();
